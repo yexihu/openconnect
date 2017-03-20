@@ -41,17 +41,26 @@ struct oc_text_buf *buf_alloc(void)
 	return calloc(1, sizeof(struct oc_text_buf));
 }
 
-void buf_append_urlencoded(struct oc_text_buf *buf, char *str)
+void buf_append_urlencoded(struct oc_text_buf *buf, const char *str)
 {
 	while (str && *str) {
 		unsigned char c = *str;
-		if (c < 0x80 && isalnum((int)(c)))
+		if (c < 0x80 && (isalnum((int)(c)) || c=='-' || c=='_' || c=='.' || c=='~'))
 			buf_append_bytes(buf, str, 1);
 		else
 			buf_append(buf, "%%%02x", c);
 
 		str++;
 	}
+}
+
+void buf_append_hex(struct oc_text_buf *buf, const void *str, unsigned len)
+{
+	const unsigned char *data = str;
+	unsigned i;
+
+	for (i = 0; i < len; i++)
+		buf_append(buf, "%02x", (unsigned)data[i]);
 }
 
 void buf_truncate(struct oc_text_buf *buf)

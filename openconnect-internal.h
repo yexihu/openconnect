@@ -114,6 +114,7 @@
 
 #include <libxml/tree.h>
 
+#define SHA256_SIZE 32
 #define SHA1_SIZE 20
 #define MD5_SIZE 16
 
@@ -454,7 +455,8 @@ struct openconnect_info {
 	void *tok_cbdata;
 
 	void *peer_cert;
-	char *peer_cert_hash;
+	char *peer_cert_sha1;
+	char *peer_cert_sha256;
 	void *cert_list_handle;
 	int cert_list_size;
 
@@ -819,6 +821,7 @@ void append_dtls_ciphers(struct openconnect_info *vpninfo, struct oc_text_buf *b
 void dtls_detect_mtu(struct openconnect_info *vpninfo);
 int openconnect_dtls_read(struct openconnect_info *vpninfo, void *buf, size_t len, unsigned ms);
 int openconnect_dtls_write(struct openconnect_info *vpninfo, void *buf, size_t len);
+char *openconnect_bin2hex(const char *prefix, const uint8_t *data, unsigned len);
 
 /* cstp.c */
 void cstp_common_headers(struct openconnect_info *vpninfo, struct oc_text_buf *buf);
@@ -900,6 +903,7 @@ int cstp_handshake(struct openconnect_info *vpninfo, unsigned init);
 int get_cert_md5_fingerprint(struct openconnect_info *vpninfo, void *cert,
 			     char *buf);
 int openconnect_sha1(unsigned char *result, void *data, int len);
+int openconnect_sha256(unsigned char *result, void *data, int len);
 int openconnect_md5(unsigned char *result, void *data, int len);
 int openconnect_random(void *bytes, int len);
 int openconnect_local_cert_md5(struct openconnect_info *vpninfo,
@@ -969,7 +973,7 @@ int cstp_obtain_cookie(struct openconnect_info *vpninfo);
 int xmlnode_is_named(xmlNode *xml_node, const char *name);
 int xmlnode_get_prop(xmlNode *xml_node, const char *name, char **var);
 int xmlnode_match_prop(xmlNode *xml_node, const char *name, const char *match);
-int append_opt(struct oc_text_buf *body, char *opt, char *name);
+int append_opt(struct oc_text_buf *body, const char *opt, const char *name);
 int append_form_opts(struct openconnect_info *vpninfo,
 		     struct oc_auth_form *form, struct oc_text_buf *body);
 void free_opt(struct oc_form_opt *opt);
@@ -987,11 +991,12 @@ int buf_ensure_space(struct oc_text_buf *buf, int len);
 void  __attribute__ ((format (printf, 2, 3)))
 	buf_append(struct oc_text_buf *buf, const char *fmt, ...);
 void buf_append_bytes(struct oc_text_buf *buf, const void *bytes, int len);
+void buf_append_hex(struct oc_text_buf *buf, const void *str, unsigned len);
 int buf_append_utf16le(struct oc_text_buf *buf, const char *utf8);
 int get_utf8char(const char **utf8);
 void buf_append_from_utf16le(struct oc_text_buf *buf, const void *utf16);
 void buf_truncate(struct oc_text_buf *buf);
-void buf_append_urlencoded(struct oc_text_buf *buf, char *str);
+void buf_append_urlencoded(struct oc_text_buf *buf, const char *str);
 int buf_error(struct oc_text_buf *buf);
 int buf_free(struct oc_text_buf *buf);
 char *openconnect_create_useragent(const char *base);

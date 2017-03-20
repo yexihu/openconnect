@@ -42,7 +42,7 @@ EXTRA_DIST = certs/ca.pem certs/ca-key.pem certs/user-cert.pem $(USER_KEYS) $(US
 dist_check_SCRIPTS =
 
 if HAVE_CWRAP
-dist_check_SCRIPTS += auth-username-pass auth-certificate
+dist_check_SCRIPTS += auth-username-pass auth-certificate id-test
 
 if TEST_PKCS11
 dist_check_SCRIPTS += auth-pkcs11
@@ -171,8 +171,8 @@ $(certsdir)/ec-key-pkcs1-aes128.pem: certs/ec-key-pkcs1.pem
 	$(OPENSSL) x509 -days 3650 -CA $(certsdir)/ca.pem -CAkey $(certsdir)/ca-key.pem \
 		-set_serial $(shell date +%s) -req -out $@ -in $<
 
-SHM2_UTIL=HOME=$(srcdir) SOFTHSM2_CONF=softhsm2.conf softhsm2-util
-P11TOOL=HOME=$(srcdir) SOFTHSM2_CONF=softhsm2.conf p11tool
+SHM2_UTIL=SOFTHSM2_CONF=softhsm2.conf softhsm2-util
+P11TOOL=SOFTHSM2_CONF=softhsm2.conf p11tool
 
 # Nice and simple: Certs visible without login, public keys present in token
 softhsm-setup0:
